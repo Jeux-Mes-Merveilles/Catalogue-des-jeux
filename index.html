@@ -43,7 +43,7 @@ footer{max-width:1400px;margin:auto;padding:0 22px 30px;color:var(--muted);font-
 <header><h1>Le catalogue de l'association Jeux Mes Merveilles</h1><p>Découvrez les jeux et consultez leur disponibilité.</p></header>
 <main>
 <section class="toolbar" aria-label="Recherche et filtres">
-<div class="search"><label for="q">Rechercher un jeu</label><input id="q" placeholder="Nom, code, éditeur, mécanique…" autocomplete="off"></div>
+<div class="search"><label for="q">Rechercher un jeu</label><input id="q" placeholder="Nom, code, éditeur, mécanique, thématique…" autocomplete="off"></div>
 <div><label for="players">Nombre de joueurs</label><select id="players"><option value="">Tous</option><option value="1">1 joueur</option><option value="2">2 joueurs</option><option value="3">3 joueurs</option><option value="4">4 joueurs</option><option value="5">5 joueurs</option><option value="6">6 joueurs</option><option value="8">8 joueurs ou plus</option></select></div>
 <div><label for="duration">Durée maximale</label><select id="duration"><option value="">Toutes</option><option value="10">10 min</option><option value="15">15 min</option><option value="20">20 min</option><option value="30">30 min</option><option value="45">45 min</option><option value="60">60 min</option></select></div>
 <div><label for="age">Âge conseillé</label><select id="age"><option value="">Tous</option><option value="2">2+</option><option value="3">3+</option><option value="4">4+</option><option value="5">5+</option><option value="6">6+</option><option value="8">8+</option><option value="10">10+</option><option value="12">12+</option><option value="14">14+</option></select></div>
@@ -83,7 +83,7 @@ function setup(){
  render();
 }
 function matches(g){
- const q=norm($('q').value.trim()), hay=norm(['nom du jeu','code AC','éditeur','mécanique','code barre'].map(k=>get(g,k)).join(' '));
+ const q=norm($('q').value.trim()), hay=norm(['nom du jeu','code AC','éditeur','mécanique','Thématique','code barre'].map(k=>get(g,k)).join(' '));
  if(q&&!hay.includes(q))return false;
  const p=$('players').value;
  if(p){const [minP,maxP]=playerRange(get(g,'Joueurs'));if(minP===null||Number(p)<minP||Number(p)>maxP)return false;if(p==='8'&&maxP<8)return false}
@@ -106,19 +106,20 @@ function render(){
   const pub=document.createElement('div');pub.className='publisher';pub.textContent=get(g,'éditeur');
   const facts=document.createElement('div');facts.className='facts';
   [['👥 ',get(g,'Joueurs')],['⏱ ',get(g,'durée')?get(g,'durée')+' min':''],['🎂 ',get(g,'age des joueurs')]].filter(x=>x[1]).forEach(([ico,v])=>{const s=document.createElement('span');s.className='pill';s.textContent=ico+v;facts.appendChild(s)});
+  const themes=document.createElement('div');themes.className='publisher';themes.textContent=get(g,'Thématique')?'🌿 '+get(g,'Thématique').split(',').map(t=>t.trim()).filter(Boolean).join(' · '):'';
   const status=document.createElement('span');status.className='availability '+availabilityStatus(g);status.textContent=availabilityLabel(g);
   const location=document.createElement('div');location.className='location';location.textContent=get(g,'rangement')?'📍 '+get(g,'rangement'):'📍 Emplacement à renseigner';
   const actions=document.createElement('div');actions.className='actions';
   const btn=document.createElement('button');btn.className='detailbtn';btn.textContent='Voir la fiche';btn.addEventListener('click',()=>showDetail(g));
   actions.appendChild(btn);
   const url=myludoUrl(g);if(url){const a=document.createElement('a');a.className='linkbtn myludo';a.href=url;a.target='_blank';a.rel='noopener noreferrer';a.textContent='Myludo ↗';actions.appendChild(a)}
-  body.append(code,title,status,pub,facts,location,actions);card.append(body);
+  body.append(code,title,status,pub,themes,facts,location,actions);card.append(body);
   card.addEventListener('dblclick',()=>showDetail(g));grid.appendChild(card);
  });
 }
 function showDetail(g){
  $('dtitle').textContent=get(g,'nom du jeu')||'Jeu sans nom';
- const rows=[['Disponibilité',availabilityLabel(g)],['Code',get(g,'code AC')],['Code-barres',get(g,'code barre')],['Éditeur',get(g,'éditeur')],['Joueurs',get(g,'Joueurs')],['Durée',get(g,'durée')?get(g,'durée')+' min':''],['Âge',get(g,'age des joueurs')],['Rangement',get(g,'rangement')],['État',get(g,'état')],['ID Myludo',get(g,'ID myludo')]];
+ const rows=[['Disponibilité',availabilityLabel(g)],['Code',get(g,'code AC')],['Code-barres',get(g,'code barre')],['Éditeur',get(g,'éditeur')],['Thématique',get(g,'Thématique')?get(g,'Thématique').split(',').map(t=>t.trim()).filter(Boolean).join(' · '):''],['Joueurs',get(g,'Joueurs')],['Durée',get(g,'durée')?get(g,'durée')+' min':''],['Âge',get(g,'age des joueurs')],['Rangement',get(g,'rangement')],['État',get(g,'état')],['ID Myludo',get(g,'ID myludo')]];
  $('fields').innerHTML='';
  rows.forEach(([k,v])=>{if(v){const el=document.createElement('div');el.className='field';const b=document.createElement('b');b.textContent=k;const s=document.createElement('span');s.textContent=v;el.append(b,s);$('fields').appendChild(el)}});
  $('dmechanics').textContent=get(g,'mécanique')||'À compléter';
